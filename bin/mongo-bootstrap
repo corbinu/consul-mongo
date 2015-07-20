@@ -36,14 +36,14 @@ echo '#'
 if [[ $CONSUL_IP && ${CONSUL_IP-x} ]]
     then
     export CONSUL_IP=$CONSUL_IP
+    if [[ $CONSUL_PORT && ${CONSUL_PORT-x} ]]
+        then
+        export CONSUL_PORT=$CONSUL_PORT
+    else
+        export CONSUL_PORT=8500
+    fi
 else
     export CONSUL_IP=consul
-fi
-
-if [[ $CONSUL_PORT && ${CONSUL_PORT-x} ]]
-    then
-    export CONSUL_PORT=$CONSUL_PORT
-else
     export CONSUL_PORT=8500
 fi
 
