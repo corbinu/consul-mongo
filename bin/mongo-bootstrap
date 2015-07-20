@@ -1,13 +1,6 @@
 #!/bin/bash
 
-export MYIPPRIVATE=$(ip addr show eth0 | grep -o '[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}')
-HAVEPUBLIC=$(ip link show | grep eth1)
-if [[ $HAVEPUBLIC && ${HAVEPUBLIC-x} ]]
-    then
-    export MYIPPUBLIC=$(ip addr show eth1 | grep -o '[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}')
-else
-    export MYIPPUBLIC=$MYIPPRIVATE
-fi
+export PRIVATE_IP=$(ip addr show eth0 | grep -o '[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}')
 
 installed ()
 {
@@ -40,7 +33,21 @@ echo '#'
 echo '# Checking Consul availability'
 echo '#'
 
-curl -fs --retry 7 --retry-delay 3 http://consul:8500/v1/agent/services &> /dev/null
+if [[ $CONSUL_IP && ${CONSUL_IP-x} ]]
+    then
+    export CONSUL_IP=$CONSUL_IP
+else
+    export CONSUL_IP=consul
+fi
+
+if [[ $CONSUL_PORT && ${CONSUL_PORT-x} ]]
+    then
+    export CONSUL_PORT=$CONSUL_PORT
+else
+    export CONSUL_PORT=8500
+fi
+
+curl -fs --retry 7 --retry-delay 3 http://$CONSUL_IP:$CONSUL_PORT/v1/agent/services &> /dev/null
 if [ $? -ne 0 ]
 then
     echo '#'
@@ -71,6 +78,6 @@ echo '#'
 echo '# Registering service instance'
 echo '#'
 
-curl -f --retry 7 --retry-delay 3 http://consul:8500/v1/agent/service/register -d "$(printf '{"ID":"mongo-%s","Name":"mongo","Address":"%s"}' $MYIPPRIVATE $MYIPPRIVATE)"
+curl -f --retry 7 --retry-delay 3 http://$CONSUL_IP:$CONSUL_PORT/v1/agent/service/register -d "$(printf '{"ID":"mongo-%s","Name":"mongo","Address":"%s","Port":27017}' $PRIVATE_IP $PRIVATE_IP)"
 
 installed
