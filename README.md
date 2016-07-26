@@ -15,7 +15,7 @@ docker run -d --name m1 --link consul:consul corbinu/consul-mongo
 docker exec -it m1 mongo-bootstrap
 ```
 
-Consul will UI will be available on port mapped to 8500
+Consul UI will be available on port mapped to 8500
 
 
 ## Consul notes
